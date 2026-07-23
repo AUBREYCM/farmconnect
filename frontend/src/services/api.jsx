@@ -29,6 +29,11 @@ export const deleteProduct = (id) => API.delete(`/products/${id}`);
 export const placeOrder = (data) => API.post("/orders", data);
 export const getMyOrders = () => API.get("/orders/my-orders");
 export const getFarmerOrders = () => API.get("/orders/farmer-orders");
+// Upload image to Cloudinary via backend
+export const uploadProductImage = (formData) =>
+  API.post("/upload", formData, {
+    headers: { "Content-Type": "multipart/form-data" },
+  });
 
 export default API;
 // Admin endpoints

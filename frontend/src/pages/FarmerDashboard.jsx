@@ -1,3 +1,10 @@
+import {
+  getFarmerOrders,
+  getAllProducts,
+  addProduct,
+  deleteProduct,
+  uploadProductImage,
+} from "../services/api";
 import { useState, useEffect } from "react";
 import {
   Home,
@@ -14,13 +21,6 @@ import {
   Plus,
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
-import {
-  getFarmerOrders,
-  getAllProducts,
-  addProduct,
-  deleteProduct,
-} from "../services/api";
-
 const ORDER_STAGES = [
   { label: "Confirmed", icon: CheckCircle },
   { label: "In Transit", icon: Truck },
@@ -46,10 +46,15 @@ export default function FarmerDashboard() {
     description: "",
     price: "",
     quantity: "",
+    province: "",
+    district: "",
+    image_url: "",
   });
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
-
+  const [imageFile, setImageFile] = useState(null);
+  const [imagePreview, setImagePreview] = useState("");
+  const [uploading, setUploading] = useState(false);
   useEffect(() => {
     fetchData();
   }, []);
@@ -79,19 +84,47 @@ export default function FarmerDashboard() {
     e.preventDefault();
     setError("");
     setSuccess("");
+    setUploading(true);
+
     try {
+      let image_url = "";
+
+      // Upload image first if one was selected
+      if (imageFile) {
+        const formData = new FormData();
+        formData.append("image", imageFile);
+        const uploadRes = await uploadProductImage(formData);
+        image_url = uploadRes.data.image_url;
+      }
+
       await addProduct({
         name: newProduct.name,
         description: newProduct.description,
         price: parseFloat(newProduct.price),
         quantity: parseInt(newProduct.quantity),
+        province: newProduct.province,
+        district: newProduct.district,
+        image_url,
       });
+
       setSuccess("Product listed successfully!");
-      setNewProduct({ name: "", description: "", price: "", quantity: "" });
+      setNewProduct({
+        name: "",
+        description: "",
+        price: "",
+        quantity: "",
+        province: "",
+        district: "",
+        image_url: "",
+      });
+      setImageFile(null);
+      setImagePreview("");
       setShowAddProduct(false);
       fetchData();
     } catch (err) {
       setError(err.response?.data?.message || "Failed to add product");
+    } finally {
+      setUploading(false);
     }
   };
 
@@ -296,6 +329,78 @@ export default function FarmerDashboard() {
                     }
                     className="w-full px-3 py-2 rounded-xl text-sm outline-none border border-black/10 bg-[#F7F5F0]"
                   />
+                  {/* Image Upload */}
+                  <div
+                    className="w-full rounded-xl border border-black/10 bg-[#F7F5F0] overflow-hidden cursor-pointer"
+                    onClick={() =>
+                      document.getElementById("productImage").click()
+                    }
+                  >
+                    {imagePreview ? (
+                      <img
+                        src={imagePreview}
+                        alt="Preview"
+                        className="w-full h-32 object-cover"
+                      />
+                    ) : (
+                      <div className="h-32 flex flex-col items-center justify-center gap-2">
+                        <span className="text-2xl">📷</span>
+                        <p className="text-[11px] text-[#7A7A6E]">
+                          Tap to add product photo
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                  <input
+                    id="productImage"
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(e) => {
+                      const file = e.target.files[0];
+                      if (file) {
+                        setImageFile(file);
+                        setImagePreview(URL.createObjectURL(file));
+                      }
+                    }}
+                  />
+                  <select
+                    value={newProduct.province}
+                    onChange={(e) =>
+                      setNewProduct({
+                        ...newProduct,
+                        province: e.target.value,
+                        district: "",
+                      })
+                    }
+                    required
+                    className="w-full px-3 py-2 rounded-xl text-sm outline-none border border-black/10 bg-[#F7F5F0]"
+                    style={{
+                      color: newProduct.province ? "#1C2B1A" : "#7A7A6E",
+                    }}
+                  >
+                    <option value="">Select Province</option>
+                    <option value="Lusaka">Lusaka</option>
+                    <option value="Copperbelt">Copperbelt</option>
+                    <option value="Eastern">Eastern</option>
+                    <option value="Northern">Northern</option>
+                    <option value="Southern">Southern</option>
+                    <option value="Western">Western</option>
+                    <option value="Central">Central</option>
+                    <option value="North-Western">North-Western</option>
+                    <option value="Luapula">Luapula</option>
+                    <option value="Muchinga">Muchinga</option>
+                  </select>
+
+                  <input
+                    type="text"
+                    placeholder="District (e.g. Lusaka, Ndola, Chipata)"
+                    value={newProduct.district}
+                    onChange={(e) =>
+                      setNewProduct({ ...newProduct, district: e.target.value })
+                    }
+                    className="w-full px-3 py-2 rounded-xl text-sm outline-none border border-black/10 bg-[#F7F5F0]"
+                  />
                   <div className="grid grid-cols-2 gap-2">
                     <input
                       type="number"
@@ -332,10 +437,14 @@ export default function FarmerDashboard() {
                     </button>
                     <button
                       type="submit"
+                      disabled={uploading}
                       className="flex-1 py-2 rounded-xl text-sm font-semibold text-white"
-                      style={{ background: "#2D6A4F" }}
+                      style={{
+                        background: uploading ? "#40916C" : "#2D6A4F",
+                        opacity: uploading ? 0.8 : 1,
+                      }}
                     >
-                      List Product
+                      {uploading ? "Uploading..." : "List Product"}
                     </button>
                   </div>
                 </div>
@@ -361,7 +470,10 @@ export default function FarmerDashboard() {
                   >
                     <div className="relative h-[110px] bg-stone-100">
                       <img
-                        src={`https://source.unsplash.com/400x300/?${encodeURIComponent(product.name)},vegetable,food`}
+                        src={
+                          product.image_url ||
+                          `https://source.unsplash.com/400x300/?${encodeURIComponent(product.name)},vegetable,food`
+                        }
                         alt={product.name}
                         className="w-full h-full object-cover"
                         onError={(e) => {
@@ -400,6 +512,14 @@ export default function FarmerDashboard() {
                       <p className="text-[10px] text-[#7A7A6E] mt-1 font-medium">
                         {product.quantity} kg available
                       </p>
+                      {product.province && (
+                        <p
+                          className="text-[10px] mt-0.5 font-medium"
+                          style={{ color: "#A67C52" }}
+                        >
+                          📍 {product.province}
+                        </p>
+                      )}
                       <button
                         onClick={() => handleDeleteProduct(product.id)}
                         className="mt-2 w-full text-[10px] py-1 rounded-lg font-semibold"

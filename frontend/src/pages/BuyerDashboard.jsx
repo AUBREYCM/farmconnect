@@ -28,6 +28,7 @@ export default function BuyerDashboard() {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
+  const [selectedProvince, setSelectedProvince] = useState("");
   const [ordering, setOrdering] = useState(null);
   const [orderQty, setOrderQty] = useState(1);
   const [error, setError] = useState("");
@@ -53,9 +54,15 @@ export default function BuyerDashboard() {
     }
   };
 
-  const filteredProducts = products.filter((p) =>
-    p.name.toLowerCase().includes(searchQuery.toLowerCase()),
-  );
+  const filteredProducts = products.filter((p) => {
+    const matchesSearch = p.name
+      .toLowerCase()
+      .includes(searchQuery.toLowerCase());
+    const matchesProvince = selectedProvince
+      ? p.province === selectedProvince
+      : true;
+    return matchesSearch && matchesProvince;
+  });
 
   const totalSpent = orders.reduce(
     (sum, order) => sum + parseFloat(order.total_price || 0),
@@ -231,6 +238,39 @@ export default function BuyerDashboard() {
               />
             </div>
           </div>
+          {/* Province Filter */}
+          <div
+            className="px-6 pb-3 flex gap-2 overflow-x-auto"
+            style={{ scrollbarWidth: "none" }}
+          >
+            {[
+              "",
+              "Lusaka",
+              "Copperbelt",
+              "Eastern",
+              "Northern",
+              "Southern",
+              "Western",
+              "Central",
+              "North-Western",
+              "Luapula",
+              "Muchinga",
+            ].map((province) => (
+              <button
+                key={province}
+                onClick={() => setSelectedProvince(province)}
+                className="flex-none px-3 py-1.5 rounded-full text-[11px] font-semibold transition-all"
+                style={{
+                  background:
+                    selectedProvince === province ? "#1B4332" : "#fff",
+                  color: selectedProvince === province ? "#fff" : "#7A7A6E",
+                  border: "1px solid #D8F3DC",
+                }}
+              >
+                {province === "" ? "All Zambia" : province}
+              </button>
+            ))}
+          </div>
 
           {/* Marketplace */}
           <div className="pt-1 pb-1">
@@ -260,7 +300,10 @@ export default function BuyerDashboard() {
                   >
                     <div className="relative h-[110px] bg-stone-100">
                       <img
-                        src={`https://source.unsplash.com/400x300/?${encodeURIComponent(product.name)},vegetable,food`}
+                        src={
+                          product.image_url ||
+                          `https://source.unsplash.com/400x300/?${encodeURIComponent(product.name)},vegetable,food`
+                        }
                         alt={product.name}
                         className="w-full h-full object-cover"
                         onError={(e) => {

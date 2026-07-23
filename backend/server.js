@@ -15,13 +15,14 @@ const userRoutes = require("./routes/userRoutes");
 const productRoutes = require("./routes/productRoutes");
 const orderRoutes = require("./routes/orderRoutes");
 const paymentRoutes = require("./routes/paymentRoutes");
+const uploadRoutes = require("./routes/uploadRoutes");
 
 // Mount Routes
 app.use("/api/users", userRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/orders", orderRoutes);
 app.use("/api/payments", paymentRoutes);
-
+app.use("/api/upload", uploadRoutes);
 // Basic Test Route
 app.get("/", (req, res) => {
   res.send("FarmConnect Backend is running smoothly!");

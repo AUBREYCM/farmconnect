@@ -4,7 +4,8 @@ const pool = require("../config/db");
 // @route   POST /api/products
 // @access  Farmers only
 const addProduct = async (req, res) => {
-  const { name, description, price, quantity } = req.body;
+  const { name, description, price, quantity, province, district, image_url } =
+    req.body;
   const farmer_id = req.user.id;
 
   try {
@@ -15,8 +16,20 @@ const addProduct = async (req, res) => {
     }
 
     const newProduct = await pool.query(
-      "INSERT INTO products (farmer_id, name, description, price, quantity) VALUES ($1, $2, $3, $4, $5) RETURNING *",
-      [farmer_id, name, description, price, quantity],
+      `INSERT INTO products 
+       (farmer_id, name, description, price, quantity, province, district, image_url) 
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8) 
+       RETURNING *`,
+      [
+        farmer_id,
+        name,
+        description,
+        price,
+        quantity,
+        province || null,
+        district || null,
+        image_url || null,
+      ],
     );
 
     res.status(201).json(newProduct.rows[0]);
