@@ -4,6 +4,7 @@ import { useAuth } from "../context/AuthContext";
 import { loginUser } from "../services/api";
 
 export default function Login() {
+  const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -20,11 +21,8 @@ export default function Login() {
     try {
       const response = await loginUser({ email, password });
       const { token, ...userData } = response.data;
-
-      // Save user and token to AuthContext + localStorage automatically
       login(userData, token);
 
-      // Redirect based on role
       if (userData.role === "farmer") {
         navigate("/dashboard/farmer");
       } else if (userData.role === "buyer") {
@@ -135,21 +133,31 @@ export default function Login() {
               >
                 Password
               </label>
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                placeholder="••••••••"
-                className="w-full px-4 py-3 rounded-lg text-sm outline-none transition-all"
-                style={{
-                  border: "1px solid #D8F3DC",
-                  background: "#F8F4EE",
-                  color: "#1A1A1A",
-                }}
-                onFocus={(e) => (e.target.style.border = "1px solid #40916C")}
-                onBlur={(e) => (e.target.style.border = "1px solid #D8F3DC")}
-              />
+              <div className="relative">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  placeholder="••••••••"
+                  className="w-full px-4 py-3 rounded-lg text-sm outline-none transition-all"
+                  style={{
+                    border: "1px solid #D8F3DC",
+                    background: "#F8F4EE",
+                    color: "#1A1A1A",
+                  }}
+                  onFocus={(e) => (e.target.style.border = "1px solid #40916C")}
+                  onBlur={(e) => (e.target.style.border = "1px solid #D8F3DC")}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-sm"
+                  style={{ color: "#7A7A6E" }}
+                >
+                  {showPassword ? "Hide" : "Show"}
+                </button>
+              </div>
             </div>
 
             {/* Submit */}

@@ -11,6 +11,8 @@ export default function Register() {
     confirmPassword: "",
     role: "buyer",
   });
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -44,11 +46,8 @@ export default function Register() {
       });
 
       const { token, ...userData } = response.data;
-
-      // Save user and token automatically
       login(userData, token);
 
-      // Redirect based on role
       if (userData.role === "farmer") {
         navigate("/dashboard/farmer");
       } else if (userData.role === "buyer") {
@@ -221,18 +220,28 @@ export default function Register() {
               >
                 Password
               </label>
-              <input
-                type="password"
-                name="password"
-                value={formData.password}
-                onChange={handleChange}
-                required
-                placeholder="Min. 6 characters"
-                className="w-full px-4 py-3 rounded-lg text-sm outline-none transition-all"
-                style={inputStyle}
-                onFocus={(e) => (e.target.style.border = "1px solid #40916C")}
-                onBlur={(e) => (e.target.style.border = "1px solid #D8F3DC")}
-              />
+              <div className="relative">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  name="password"
+                  value={formData.password}
+                  onChange={handleChange}
+                  required
+                  placeholder="Min. 6 characters"
+                  className="w-full px-4 py-3 rounded-lg text-sm outline-none transition-all"
+                  style={inputStyle}
+                  onFocus={(e) => (e.target.style.border = "1px solid #40916C")}
+                  onBlur={(e) => (e.target.style.border = "1px solid #D8F3DC")}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-sm"
+                  style={{ color: "#7A7A6E" }}
+                >
+                  {showPassword ? "Hide" : "Show"}
+                </button>
+              </div>
             </div>
 
             {/* Confirm Password */}
@@ -243,18 +252,28 @@ export default function Register() {
               >
                 Confirm password
               </label>
-              <input
-                type="password"
-                name="confirmPassword"
-                value={formData.confirmPassword}
-                onChange={handleChange}
-                required
-                placeholder="••••••••"
-                className="w-full px-4 py-3 rounded-lg text-sm outline-none transition-all"
-                style={inputStyle}
-                onFocus={(e) => (e.target.style.border = "1px solid #40916C")}
-                onBlur={(e) => (e.target.style.border = "1px solid #D8F3DC")}
-              />
+              <div className="relative">
+                <input
+                  type={showConfirmPassword ? "text" : "password"}
+                  name="confirmPassword"
+                  value={formData.confirmPassword}
+                  onChange={handleChange}
+                  required
+                  placeholder="••••••••"
+                  className="w-full px-4 py-3 rounded-lg text-sm outline-none transition-all"
+                  style={inputStyle}
+                  onFocus={(e) => (e.target.style.border = "1px solid #40916C")}
+                  onBlur={(e) => (e.target.style.border = "1px solid #D8F3DC")}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-sm"
+                  style={{ color: "#7A7A6E" }}
+                >
+                  {showConfirmPassword ? "Hide" : "Show"}
+                </button>
+              </div>
             </div>
 
             {/* Submit */}
