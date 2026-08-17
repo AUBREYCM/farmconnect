@@ -1,3 +1,4 @@
+import { useNavigate } from "react-router-dom";
 import {
   getFarmerOrders,
   getAllProducts,
@@ -21,6 +22,7 @@ import {
   Plus,
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
+
 const ORDER_STAGES = [
   { label: "Confirmed", icon: CheckCircle },
   { label: "In Transit", icon: Truck },
@@ -28,14 +30,15 @@ const ORDER_STAGES = [
 ];
 
 const NAV_ITEMS = [
-  { id: "home", label: "Home", icon: Home },
-  { id: "market", label: "Marketplace", icon: ShoppingBag },
-  { id: "messages", label: "Messages", icon: MessageCircle },
-  { id: "profile", label: "Profile", icon: User },
+  { id: "home", label: "Home", icon: Home, path: "/dashboard/farmer" },
+  { id: "market", label: "Marketplace", icon: ShoppingBag, path: "/dashboard/buyer" },
+  { id: "messages", label: "Messages", icon: MessageCircle, path: "/dashboard/farmer" },
+  { id: "profile", label: "Profile", icon: User, path: "/profile" },
 ];
 
 export default function FarmerDashboard() {
   const { user, logout } = useAuth();
+  const navigate = useNavigate();
   const [activeNav, setActiveNav] = useState("home");
   const [orders, setOrders] = useState([]);
   const [products, setProducts] = useState([]);
@@ -55,6 +58,7 @@ export default function FarmerDashboard() {
   const [imageFile, setImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState("");
   const [uploading, setUploading] = useState(false);
+
   useEffect(() => {
     fetchData();
   }, []);
@@ -89,7 +93,6 @@ export default function FarmerDashboard() {
     try {
       let image_url = "";
 
-      // Upload image first if one was selected
       if (imageFile) {
         const formData = new FormData();
         formData.append("image", imageFile);
@@ -123,7 +126,7 @@ export default function FarmerDashboard() {
       fetchData();
     } catch (err) {
       setError(err.response?.data?.message || "Failed to add product");
-    } finally {
+    } fontally {
       setUploading(false);
     }
   };
@@ -641,7 +644,10 @@ export default function FarmerDashboard() {
               return (
                 <button
                   key={item.id}
-                  onClick={() => setActiveNav(item.id)}
+                  onClick={() => {
+                    setActiveNav(item.id);
+                    navigate(item.path);
+                  }}
                   className="flex-1 flex flex-col items-center gap-1 py-1 relative"
                 >
                   <div

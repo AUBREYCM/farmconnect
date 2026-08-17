@@ -1,8 +1,8 @@
+import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import {
   Home,
   ShoppingBag,
-  MessageCircle,
   User,
   Bell,
   ChevronRight,
@@ -14,15 +14,9 @@ import {
 import { useAuth } from "../context/AuthContext";
 import { getAllProducts, placeOrder, getMyOrders } from "../services/api";
 
-const NAV_ITEMS = [
-  { id: "home", label: "Home", icon: Home },
-  { id: "market", label: "Marketplace", icon: ShoppingBag },
-  { id: "orders", label: "Orders", icon: Package },
-  { id: "profile", label: "Profile", icon: User },
-];
-
 export default function BuyerDashboard() {
   const { user, logout } = useAuth();
+  const navigate = useNavigate();
   const [activeNav, setActiveNav] = useState("home");
   const [products, setProducts] = useState([]);
   const [orders, setOrders] = useState([]);
@@ -471,25 +465,54 @@ export default function BuyerDashboard() {
         {/* Bottom Nav */}
         <div className="flex-none bg-white border-t border-black/8 px-2 pb-4 pt-2">
           <div className="flex items-center">
-            {NAV_ITEMS.map((item) => {
+            {[
+              {
+                id: "home",
+                label: "Home",
+                icon: Home,
+                path: "/dashboard/buyer",
+              },
+              {
+                id: "market",
+                label: "Marketplace",
+                icon: ShoppingBag,
+                path: "/dashboard/buyer",
+              },
+              {
+                id: "orders",
+                label: "Orders",
+                icon: Package,
+                path: "/dashboard/buyer",
+              },
+              { id: "profile", label: "Profile", icon: User, path: "/profile" },
+            ].map((item) => {
               const active = activeNav === item.id;
               return (
                 <button
                   key={item.id}
-                  onClick={() => setActiveNav(item.id)}
-                  className="flex-1 flex flex-col items-center gap-1 py-1 relative"
+                  onClick={() => {
+                    setActiveNav(item.id);
+                    navigate(item.path);
+                  }}
+                  className="flex-1 flex flex-col items-center gap-1 py-1"
                 >
                   <div
-                    className={`w-8 h-8 rounded-xl flex items-center justify-center transition-colors ${active ? "bg-[#EAF3EE]" : ""}`}
+                    className={`w-8 h-8 rounded-xl flex items-center justify-center transition-colors ${
+                      active ? "bg-[#EAF3EE]" : ""
+                    }`}
                   >
                     <item.icon
                       size={20}
-                      className={`transition-colors ${active ? "text-[#2D6A4F]" : "text-[#7A7A6E]"}`}
+                      className={`transition-colors ${
+                        active ? "text-[#2D6A4F]" : "text-[#7A7A6E]"
+                      }`}
                       strokeWidth={active ? 2.5 : 2.1}
                     />
                   </div>
                   <span
-                    className={`text-[10px] font-semibold transition-colors ${active ? "text-[#2D6A4F]" : "text-[#7A7A6E]"}`}
+                    className={`text-[10px] font-semibold transition-colors ${
+                      active ? "text-[#2D6A4F]" : "text-[#7A7A6E]"
+                    }`}
                   >
                     {item.label}
                   </span>
