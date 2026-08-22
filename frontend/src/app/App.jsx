@@ -1,3 +1,4 @@
+import Profile from "../pages/Profile";
 import AdminDashboard from "../pages/AdminDashboard";
 import BuyerDashboard from "../pages/BuyerDashboard";
 import FarmerDashboard from "../pages/FarmerDashboard";
@@ -99,6 +100,14 @@ function AppRoutes() {
         element={
           <ProtectedRoute allowedRoles={["admin"]}>
             <AdminDashboard />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/profile"
+        element={
+          <ProtectedRoute allowedRoles={["farmer", "buyer", "admin"]}>
+            <Profile />
           </ProtectedRoute>
         }
       />
