@@ -31,8 +31,18 @@ const ORDER_STAGES = [
 
 const NAV_ITEMS = [
   { id: "home", label: "Home", icon: Home, path: "/dashboard/farmer" },
-  { id: "market", label: "Marketplace", icon: ShoppingBag, path: "/dashboard/buyer" },
-  { id: "messages", label: "Messages", icon: MessageCircle, path: "/dashboard/farmer" },
+  {
+    id: "market",
+    label: "Marketplace",
+    icon: ShoppingBag,
+    path: "/dashboard/buyer",
+  },
+  {
+    id: "messages",
+    label: "Messages",
+    icon: MessageCircle,
+    path: "/dashboard/farmer",
+  },
   { id: "profile", label: "Profile", icon: User, path: "/profile" },
 ];
 
@@ -126,7 +136,7 @@ export default function FarmerDashboard() {
       fetchData();
     } catch (err) {
       setError(err.response?.data?.message || "Failed to add product");
-    } fontally {
+    } finally {
       setUploading(false);
     }
   };
