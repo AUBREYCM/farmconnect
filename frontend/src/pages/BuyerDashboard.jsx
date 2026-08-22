@@ -314,15 +314,25 @@ export default function BuyerDashboard() {
                       <p className="text-[13px] font-bold text-[#1C2B1A]">
                         {product.name}
                       </p>
-                      <div className="flex items-center gap-1 mt-0.5">
+
+                      {/* CLICKABLE FARMER AUTHOR BLOCK */}
+                      <div
+                        onClick={() =>
+                          navigate(
+                            `/farmer/${product.farmer_id || product.user_id}`,
+                          )
+                        }
+                        className="flex items-center gap-1 mt-0.5 cursor-pointer hover:underline group"
+                      >
                         <Star
                           size={9}
                           className="text-yellow-400 fill-yellow-400"
                         />
-                        <span className="text-[10px] text-[#7A7A6E] font-medium">
+                        <span className="text-[10px] text-[#7A7A6E] font-medium group-hover:text-[#2D6A4F]">
                           by {product.farmer_name}
                         </span>
                       </div>
+
                       <div className="mt-2">
                         <p className="text-[11px] text-[#7A7A6E]">Price / kg</p>
                         <p className="text-[14px] font-extrabold text-[#2D6A4F]">
