@@ -8,10 +8,6 @@ import {
 } from "../services/api";
 import { useState, useEffect } from "react";
 import {
-  Home,
-  ShoppingBag,
-  MessageCircle,
-  User,
   Bell,
   ChevronRight,
   TrendingUp,
@@ -30,20 +26,10 @@ const ORDER_STAGES = [
 ];
 
 const NAV_ITEMS = [
-  { id: "home", label: "Home", icon: Home, path: "/dashboard/farmer" },
-  {
-    id: "market",
-    label: "Marketplace",
-    icon: ShoppingBag,
-    path: "/dashboard/buyer",
-  },
-  {
-    id: "messages",
-    label: "Messages",
-    icon: MessageCircle,
-    path: "/dashboard/farmer",
-  },
-  { id: "profile", label: "Profile", icon: User, path: "/profile" },
+  { id: "home", label: "Home", emoji: "🏠", path: "/dashboard/farmer" },
+  { id: "market", label: "Marketplace", emoji: "🛒", path: "/dashboard/buyer" },
+  { id: "messages", label: "Messages", emoji: "💬", path: "/dashboard/farmer" },
+  { id: "profile", label: "Profile", emoji: "👤", path: "/profile" },
 ];
 
 export default function FarmerDashboard() {
@@ -84,7 +70,7 @@ export default function FarmerDashboard() {
       setProducts(productsRes.data.filter((p) => p.farmer_name === user?.name));
     } catch (err) {
       console.error("Failed to fetch data:", err);
-    } finally {
+    } fontally {
       setLoading(false);
     }
   };
@@ -663,11 +649,7 @@ export default function FarmerDashboard() {
                   <div
                     className={`w-8 h-8 rounded-xl flex items-center justify-center transition-colors ${active ? "bg-[#EAF3EE]" : ""}`}
                   >
-                    <item.icon
-                      size={20}
-                      className={`transition-colors ${active ? "text-[#2D6A4F]" : "text-[#7A7A6E]"}`}
-                      strokeWidth={active ? 2.5 : 2.1}
-                    />
+                    <span className="text-lg leading-none">{item.emoji}</span>
                   </div>
                   <span
                     className={`text-[10px] font-semibold transition-colors ${active ? "text-[#2D6A4F]" : "text-[#7A7A6E]"}`}

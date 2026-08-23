@@ -479,22 +479,27 @@ export default function BuyerDashboard() {
               {
                 id: "home",
                 label: "Home",
-                icon: Home,
+                emoji: "🏠",
                 path: "/dashboard/buyer",
               },
               {
                 id: "market",
                 label: "Marketplace",
-                icon: ShoppingBag,
+                emoji: "🛒",
                 path: "/dashboard/buyer",
               },
               {
                 id: "orders",
                 label: "Orders",
-                icon: Package,
+                emoji: "📦",
                 path: "/dashboard/buyer",
               },
-              { id: "profile", label: "Profile", icon: User, path: "/profile" },
+              {
+                id: "profile",
+                label: "Profile",
+                emoji: "👤",
+                path: "/profile",
+              },
             ].map((item) => {
               const active = activeNav === item.id;
               return (
@@ -506,23 +511,10 @@ export default function BuyerDashboard() {
                   }}
                   className="flex-1 flex flex-col items-center gap-1 py-1"
                 >
-                  <div
-                    className={`w-8 h-8 rounded-xl flex items-center justify-center transition-colors ${
-                      active ? "bg-[#EAF3EE]" : ""
-                    }`}
-                  >
-                    <item.icon
-                      size={20}
-                      className={`transition-colors ${
-                        active ? "text-[#2D6A4F]" : "text-[#7A7A6E]"
-                      }`}
-                      strokeWidth={active ? 2.5 : 2.1}
-                    />
-                  </div>
+                  <span className="text-2xl">{item.emoji}</span>
                   <span
-                    className={`text-[10px] font-semibold transition-colors ${
-                      active ? "text-[#2D6A4F]" : "text-[#7A7A6E]"
-                    }`}
+                    className="text-[10px] font-semibold"
+                    style={{ color: active ? "#2D6A4F" : "#7A7A6E" }}
                   >
                     {item.label}
                   </span>

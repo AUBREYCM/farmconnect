@@ -98,6 +98,28 @@ export default function Profile() {
 
   const displayStats = user?.role === "farmer" ? farmerStats : buyerStats;
 
+  const NAV_ITEMS = [
+    {
+      id: "home",
+      label: "Home",
+      emoji: "🏠",
+      path: user?.role === "farmer" ? "/dashboard/farmer" : "/dashboard/buyer",
+    },
+    {
+      id: "market",
+      label: "Marketplace",
+      emoji: "🛒",
+      path: "/dashboard/buyer",
+    },
+    {
+      id: "orders",
+      label: "Orders",
+      emoji: "📦",
+      path: user?.role === "farmer" ? "/dashboard/farmer" : "/dashboard/buyer",
+    },
+    { id: "profile", label: "Profile", emoji: "👤", path: "/profile" },
+  ];
+
   return (
     <div
       className="min-h-screen w-full flex items-center justify-center bg-stone-200 p-4"
@@ -379,33 +401,7 @@ export default function Profile() {
         {/* Bottom Nav */}
         <div className="flex-none bg-white border-t border-black/8 px-2 pb-4 pt-2">
           <div className="flex items-center">
-            {[
-              {
-                id: "home",
-                label: "Home",
-                icon: Home,
-                path:
-                  user?.role === "farmer"
-                    ? "/dashboard/farmer"
-                    : "/dashboard/buyer",
-              },
-              {
-                id: "market",
-                label: "Marketplace",
-                icon: ShoppingBag,
-                path: "/dashboard/buyer",
-              },
-              {
-                id: "orders",
-                label: "Orders",
-                icon: Package,
-                path:
-                  user?.role === "farmer"
-                    ? "/dashboard/farmer"
-                    : "/dashboard/buyer",
-              },
-              { id: "profile", label: "Profile", icon: User, path: "/profile" },
-            ].map((item) => {
+            {NAV_ITEMS.map((item) => {
               const active = item.id === "profile";
               return (
                 <button
@@ -416,11 +412,7 @@ export default function Profile() {
                   <div
                     className={`w-8 h-8 rounded-xl flex items-center justify-center transition-colors ${active ? "bg-[#EAF3EE]" : ""}`}
                   >
-                    <item.icon
-                      size={20}
-                      className={`transition-colors ${active ? "text-[#2D6A4F]" : "text-[#7A7A6E]"}`}
-                      strokeWidth={active ? 2.5 : 2.1}
-                    />
+                    <span className="text-lg leading-none">{item.emoji}</span>
                   </div>
                   <span
                     className={`text-[10px] font-semibold transition-colors ${active ? "text-[#2D6A4F]" : "text-[#7A7A6E]"}`}
