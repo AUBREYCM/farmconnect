@@ -1,17 +1,19 @@
-import { useState, useEffect } from "react";
-import { useAuth } from "../context/AuthContext";
-import { useNavigate } from "react-router-dom";
-import { getFarmerOrders, getMyOrders, getAllProducts } from "../services/api";
 import {
+  Home,
+  ShoppingBag,
+  Package,
   User,
   Settings,
   LogOut,
   ChevronRight,
   MapPin,
-  Package,
   TrendingUp,
   ShoppingCart,
 } from "lucide-react";
+import { useState, useEffect } from "react";
+import { useAuth } from "../context/AuthContext";
+import { useNavigate } from "react-router-dom";
+import { getFarmerOrders, getMyOrders, getAllProducts } from "../services/api";
 
 export default function Profile() {
   const { user, logout } = useAuth();
@@ -381,7 +383,7 @@ export default function Profile() {
               {
                 id: "home",
                 label: "Home",
-                icon: "🏠",
+                icon: Home,
                 path:
                   user?.role === "farmer"
                     ? "/dashboard/farmer"
@@ -390,36 +392,44 @@ export default function Profile() {
               {
                 id: "market",
                 label: "Marketplace",
-                icon: "🛒",
+                icon: ShoppingBag,
                 path: "/dashboard/buyer",
               },
               {
                 id: "orders",
                 label: "Orders",
-                icon: "📦",
+                icon: Package,
                 path:
                   user?.role === "farmer"
                     ? "/dashboard/farmer"
                     : "/dashboard/buyer",
               },
-              { id: "profile", label: "Profile", icon: "👤", path: "/profile" },
-            ].map((item) => (
-              <button
-                key={item.id}
-                onClick={() => navigate(item.path)}
-                className="flex-1 flex flex-col items-center gap-1 py-1"
-              >
-                <span className="text-xl">{item.icon}</span>
-                <span
-                  className="text-[10px] font-semibold"
-                  style={{
-                    color: item.id === "profile" ? "#2D6A4F" : "#7A7A6E",
-                  }}
+              { id: "profile", label: "Profile", icon: User, path: "/profile" },
+            ].map((item) => {
+              const active = item.id === "profile";
+              return (
+                <button
+                  key={item.id}
+                  onClick={() => navigate(item.path)}
+                  className="flex-1 flex flex-col items-center gap-1 py-1"
                 >
-                  {item.label}
-                </span>
-              </button>
-            ))}
+                  <div
+                    className={`w-8 h-8 rounded-xl flex items-center justify-center transition-colors ${active ? "bg-[#EAF3EE]" : ""}`}
+                  >
+                    <item.icon
+                      size={20}
+                      className={`transition-colors ${active ? "text-[#2D6A4F]" : "text-[#7A7A6E]"}`}
+                      strokeWidth={active ? 2.5 : 2.1}
+                    />
+                  </div>
+                  <span
+                    className={`text-[10px] font-semibold transition-colors ${active ? "text-[#2D6A4F]" : "text-[#7A7A6E]"}`}
+                  >
+                    {item.label}
+                  </span>
+                </button>
+              );
+            })}
           </div>
         </div>
       </div>
