@@ -1,3 +1,4 @@
+import FarmerPublicProfile from "../pages/FarmerPublicProfile";
 import Profile from "../pages/Profile";
 import AdminDashboard from "../pages/AdminDashboard";
 import BuyerDashboard from "../pages/BuyerDashboard";
@@ -111,7 +112,14 @@ function AppRoutes() {
           </ProtectedRoute>
         }
       />
-
+      <Route
+        path="/farmer/:id"
+        element={
+          <ProtectedRoute allowedRoles={["farmer", "buyer", "admin"]}>
+            <FarmerPublicProfile />
+          </ProtectedRoute>
+        }
+      />
       {/* Default redirect */}
       <Route path="/" element={<Navigate to="/login" replace />} />
       <Route path="*" element={<Navigate to="/login" replace />} />
