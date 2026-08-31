@@ -1,4 +1,4 @@
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
 import {
   Bell,
@@ -32,6 +32,7 @@ const DEFAULT_IMAGE =
 export default function BuyerDashboard() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const [activeNav, setActiveNav] = useState("home");
   const [products, setProducts] = useState([]);
@@ -87,9 +88,15 @@ export default function BuyerDashboard() {
   });
 
   const totalSpent = orders.reduce(
-    (sum, order) => sum + parseFloat(order.total_price || 0),
+    (sum, order) => sum + (parseFloat(order.total_price) || 0),
     0,
   );
+
+  const formatCurrency = (amount) =>
+    Number(amount || 0).toLocaleString(undefined, {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    });
 
   const handlePlaceOrder = async (product) => {
     setError("");
@@ -200,11 +207,7 @@ export default function BuyerDashboard() {
                   Total Spent
                 </p>
                 <p className="text-[13px] font-bold text-[#1C2B1A] mt-1">
-                  ZMW{" "}
-                  {totalSpent.toLocaleString(undefined, {
-                    minimumFractionDigits: 2,
-                    maximumFractionDigits: 2,
-                  })}
+                  ZMW {formatCurrency(totalSpent)}
                 </p>
               </div>
             </div>
@@ -277,7 +280,7 @@ export default function BuyerDashboard() {
               >
                 {PROVINCES.map((province) => (
                   <button
-                    key={province}
+                    key={province || "all"}
                     onClick={() => setSelectedProvince(province)}
                     className="flex-none px-3 py-1.5 rounded-full text-[11px] font-semibold transition-all"
                     style={{
@@ -315,133 +318,139 @@ export default function BuyerDashboard() {
                     className="flex gap-4 overflow-x-auto px-6 pb-2"
                     style={{ scrollbarWidth: "none" }}
                   >
-                    {filteredProducts.map((product) => (
-                      <div
-                        key={product.id}
-                        className="flex-none w-[158px] bg-white rounded-2xl overflow-hidden shadow-sm border border-black/5 flex flex-col justify-between"
-                      >
-                        <div>
-                          <div className="relative h-[110px] bg-stone-100">
-                            <img
-                              src={product.image_url || DEFAULT_IMAGE}
-                              alt={product.name}
-                              className="w-full h-full object-cover"
-                              onError={(e) => {
-                                e.target.onerror = null;
-                                e.target.src = DEFAULT_IMAGE;
-                              }}
-                            />
-                            <span className="absolute top-2 left-2 bg-[#2D6A4F] text-white text-[9px] font-bold px-2 py-0.5 rounded-full tracking-wider">
-                              FRESH
-                            </span>
-                          </div>
-
-                          <div className="px-3 pt-2.5">
-                            <p className="text-[13px] font-bold text-[#1C2B1A] truncate">
-                              {product.name}
-                            </p>
-
-                            <div
-                              onClick={() =>
-                                navigate(
-                                  `/farmer/${product.farmer_id || product.user_id}`,
-                                )
-                              }
-                              className="flex items-center gap-1 mt-0.5 cursor-pointer hover:underline group"
-                            >
-                              <Star
-                                size={9}
-                                className="text-yellow-400 fill-yellow-400"
+                    {filteredProducts.map((product) => {
+                      const unitPrice = Number(product.price) || 0;
+                      return (
+                        <div
+                          key={product.id}
+                          className="flex-none w-[158px] bg-white rounded-2xl overflow-hidden shadow-sm border border-black/5 flex flex-col justify-between"
+                        >
+                          <div>
+                            <div className="relative h-[110px] bg-stone-100">
+                              <img
+                                src={product.image_url || DEFAULT_IMAGE}
+                                alt={product.name}
+                                className="w-full h-full object-cover"
+                                onError={(e) => {
+                                  e.currentTarget.onerror = null;
+                                  e.currentTarget.src = DEFAULT_IMAGE;
+                                }}
                               />
-                              <span className="text-[10px] text-[#7A7A6E] font-medium group-hover:text-[#2D6A4F] truncate">
-                                by {product.farmer_name || "Local Farmer"}
+                              <span className="absolute top-2 left-2 bg-[#2D6A4F] text-white text-[9px] font-bold px-2 py-0.5 rounded-full tracking-wider">
+                                FRESH
                               </span>
                             </div>
 
-                            <div className="mt-2">
-                              <p className="text-[10px] text-[#7A7A6E]">
-                                Price / kg
+                            <div className="px-3 pt-2.5">
+                              <p className="text-[13px] font-bold text-[#1C2B1A] truncate">
+                                {product.name}
                               </p>
-                              <p className="text-[14px] font-extrabold text-[#2D6A4F]">
-                                ZMW {product.price}
-                              </p>
-                            </div>
-                            <p className="text-[10px] text-[#7A7A6E] mt-0.5 font-medium">
-                              {product.quantity} kg available
-                            </p>
-                          </div>
-                        </div>
 
-                        {/* Order Actions */}
-                        <div className="p-3 pt-1">
-                          {ordering === product.id ? (
-                            <div className="space-y-1.5">
-                              <div className="flex items-center gap-1">
-                                <button
-                                  onClick={() =>
-                                    setOrderQty(Math.max(1, orderQty - 1))
-                                  }
-                                  className="w-6 h-6 rounded-lg text-sm font-bold flex items-center justify-center bg-[#D8F3DC] text-[#1B4332]"
-                                >
-                                  -
-                                </button>
-                                <span className="flex-1 text-center text-xs font-bold text-[#1C2B1A]">
-                                  {orderQty} kg
+                              <div
+                                onClick={() =>
+                                  navigate(
+                                    `/farmer/${product.farmer_id || product.user_id}`,
+                                  )
+                                }
+                                className="flex items-center gap-1 mt-0.5 cursor-pointer hover:underline group"
+                              >
+                                <Star
+                                  size={9}
+                                  className="text-yellow-400 fill-yellow-400"
+                                />
+                                <span className="text-[10px] text-[#7A7A6E] font-medium group-hover:text-[#2D6A4F] truncate">
+                                  by {product.farmer_name || "Local Farmer"}
                                 </span>
-                                <button
-                                  onClick={() =>
-                                    setOrderQty(
-                                      Math.min(product.quantity, orderQty + 1),
-                                    )
-                                  }
-                                  className="w-6 h-6 rounded-lg text-sm font-bold flex items-center justify-center bg-[#D8F3DC] text-[#1B4332]"
-                                >
-                                  +
-                                </button>
                               </div>
 
-                              <p className="text-center text-[10px] font-bold text-[#2D6A4F]">
-                                Total: ZMW{" "}
-                                {(product.price * orderQty).toFixed(2)}
+                              <div className="mt-2">
+                                <p className="text-[10px] text-[#7A7A6E]">
+                                  Price / kg
+                                </p>
+                                <p className="text-[14px] font-extrabold text-[#2D6A4F]">
+                                  ZMW {formatCurrency(unitPrice)}
+                                </p>
+                              </div>
+                              <p className="text-[10px] text-[#7A7A6E] mt-0.5 font-medium">
+                                {product.quantity} kg available
                               </p>
+                            </div>
+                          </div>
 
-                              <button
-                                onClick={() => handlePlaceOrder(product)}
-                                className="w-full py-1.5 rounded-lg text-[11px] font-bold text-white bg-[#2D6A4F] active:scale-95 transition-transform"
-                              >
-                                Confirm
-                              </button>
+                          {/* Order Actions */}
+                          <div className="p-3 pt-1">
+                            {ordering === product.id ? (
+                              <div className="space-y-1.5">
+                                <div className="flex items-center gap-1">
+                                  <button
+                                    onClick={() =>
+                                      setOrderQty(Math.max(1, orderQty - 1))
+                                    }
+                                    className="w-6 h-6 rounded-lg text-sm font-bold flex items-center justify-center bg-[#D8F3DC] text-[#1B4332]"
+                                  >
+                                    -
+                                  </button>
+                                  <span className="flex-1 text-center text-xs font-bold text-[#1C2B1A]">
+                                    {orderQty} kg
+                                  </span>
+                                  <button
+                                    onClick={() =>
+                                      setOrderQty(
+                                        Math.min(
+                                          product.quantity,
+                                          orderQty + 1,
+                                        ),
+                                      )
+                                    }
+                                    className="w-6 h-6 rounded-lg text-sm font-bold flex items-center justify-center bg-[#D8F3DC] text-[#1B4332]"
+                                  >
+                                    +
+                                  </button>
+                                </div>
+
+                                <p className="text-center text-[10px] font-bold text-[#2D6A4F]">
+                                  Total: ZMW{" "}
+                                  {formatCurrency(unitPrice * orderQty)}
+                                </p>
+
+                                <button
+                                  onClick={() => handlePlaceOrder(product)}
+                                  className="w-full py-1.5 rounded-lg text-[11px] font-bold text-white bg-[#2D6A4F] active:scale-95 transition-transform"
+                                >
+                                  Confirm
+                                </button>
+                                <button
+                                  onClick={() => {
+                                    setOrdering(null);
+                                    setOrderQty(1);
+                                  }}
+                                  className="w-full py-1 rounded-lg text-[10px] font-medium text-[#7A7A6E]"
+                                >
+                                  Cancel
+                                </button>
+                              </div>
+                            ) : (
                               <button
                                 onClick={() => {
-                                  setOrdering(null);
+                                  setOrdering(product.id);
                                   setOrderQty(1);
                                 }}
-                                className="w-full py-1 rounded-lg text-[10px] font-medium text-[#7A7A6E]"
+                                disabled={product.quantity === 0}
+                                className="w-full py-1.5 rounded-lg text-[11px] font-bold text-white transition-opacity active:scale-95 disabled:opacity-50"
+                                style={{
+                                  background:
+                                    product.quantity === 0 ? "#CCC" : "#2D6A4F",
+                                }}
                               >
-                                Cancel
+                                {product.quantity === 0
+                                  ? "Out of Stock"
+                                  : "Order Now"}
                               </button>
-                            </div>
-                          ) : (
-                            <button
-                              onClick={() => {
-                                setOrdering(product.id);
-                                setOrderQty(1);
-                              }}
-                              disabled={product.quantity === 0}
-                              className="w-full py-1.5 rounded-lg text-[11px] font-bold text-white transition-opacity active:scale-95"
-                              style={{
-                                background:
-                                  product.quantity === 0 ? "#CCC" : "#2D6A4F",
-                              }}
-                            >
-                              {product.quantity === 0
-                                ? "Out of Stock"
-                                : "Order Now"}
-                            </button>
-                          )}
+                            )}
+                          </div>
                         </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 )}
               </div>
@@ -492,8 +501,7 @@ export default function BuyerDashboard() {
                         </p>
                       </div>
                       <p className="text-[12px] font-bold text-[#2D6A4F] ml-3 flex-none">
-                        ZMW{" "}
-                        {parseFloat(order.total_price || 0).toLocaleString()}
+                        ZMW {formatCurrency(order.total_price)}
                       </p>
                     </div>
                   ))}
@@ -518,7 +526,9 @@ export default function BuyerDashboard() {
                 path: "/profile",
               },
             ].map((item) => {
-              const active = activeNav === item.id;
+              const active = item.isRoute
+                ? location.pathname === item.path
+                : activeNav === item.id;
               return (
                 <button
                   key={item.id}
