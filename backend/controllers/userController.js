@@ -14,10 +14,10 @@ const generateToken = (user) => {
 // @desc    Register a new user
 // @route   POST /api/users/register
 const registerUser = async (req, res) => {
-  const { username, email, password, role } = req.body;
+  const { username, email, password } = req.body;
 
   try {
-    if (!username || !email || !password || !role) {
+    if (!username || !email || !password) {
       return res.status(400).json({ message: "Please enter all fields" });
     }
 
@@ -34,8 +34,10 @@ const registerUser = async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
 
     const newUser = await pool.query(
-      "INSERT INTO users (username, email, password_hash, role) VALUES ($1, $2, $3, $4) RETURNING id, username, email, role, created_at",
-      [username, email, hashedPassword, role],
+      `INSERT INTO users (username, email, password_hash, role, is_buyer, is_farmer, active_mode) 
+       VALUES ($1, $2, $3, 'buyer', TRUE, FALSE, 'buyer') 
+       RETURNING id, username, email, role, is_buyer, is_farmer, active_mode, created_at`,
+      [username, email, hashedPassword],
     );
 
     const user = newUser.rows[0];
@@ -43,9 +45,12 @@ const registerUser = async (req, res) => {
 
     res.status(201).json({
       id: user.id,
-      username: user.username,
+      name: user.username,
       email: user.email,
       role: user.role,
+      is_buyer: user.is_buyer,
+      is_farmer: user.is_farmer,
+      active_mode: user.active_mode,
       created_at: user.created_at,
       token,
     });
@@ -88,9 +93,12 @@ const loginUser = async (req, res) => {
 
     res.status(200).json({
       id: user.id,
-      username: user.username,
+      name: user.username,
       email: user.email,
       role: user.role,
+      is_buyer: user.is_buyer,
+      is_farmer: user.is_farmer,
+      active_mode: user.active_mode || "buyer",
       token,
       message: "Login successful!",
     });
@@ -99,7 +107,6 @@ const loginUser = async (req, res) => {
     res.status(500).json({ message: "Server Error during login" });
   }
 };
-
 // 🔽 ADDED: Get current logged in user profile details 🔽
 // @desc    Get current logged in user profile details
 // @route   GET /api/users/profile
