@@ -1,3 +1,14 @@
+import { useState } from "react";
+import { useAuth } from "../context/AuthContext";
+import { useNavigate } from "react-router-dom";
+import {
+  getFarmerOrders,
+  getMyOrders,
+  getAllProducts,
+  activateFarmer,
+  switchMode,
+} from "../services/api";
+import { useEffect } from "react";
 import {
   Home,
   ShoppingBag,
@@ -8,15 +19,10 @@ import {
   ChevronRight,
   MapPin,
   TrendingUp,
-  ShoppingCart,
 } from "lucide-react";
-import { useState, useEffect } from "react";
-import { useAuth } from "../context/AuthContext";
-import { useNavigate } from "react-router-dom";
-import { getFarmerOrders, getMyOrders, getAllProducts } from "../services/api";
 
 export default function Profile() {
-  const { user, logout } = useAuth();
+  const { user, login, token, logout } = useAuth();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("info");
   const [stats, setStats] = useState({
@@ -26,6 +32,15 @@ export default function Profile() {
     spent: 0,
   });
   const [loading, setLoading] = useState(true);
+  const [showFarmerSetup, setShowFarmerSetup] = useState(false);
+  const [switchingMode, setSwitchingMode] = useState(false);
+  const [farmerForm, setFarmerForm] = useState({
+    phone: "",
+    farm_province: "",
+    main_produce: "",
+  });
+  const [formError, setFormError] = useState("");
+  const [formSuccess, setFormSuccess] = useState("");
 
   useEffect(() => {
     fetchStats();
@@ -34,7 +49,7 @@ export default function Profile() {
   const fetchStats = async () => {
     setLoading(true);
     try {
-      if (user?.role === "farmer") {
+      if (user?.is_farmer) {
         const [ordersRes, productsRes] = await Promise.all([
           getFarmerOrders(),
           getAllProducts(),
@@ -52,7 +67,7 @@ export default function Profile() {
           listings: myProducts.length,
           spent: 0,
         });
-      } else if (user?.role === "buyer") {
+      } else {
         const ordersRes = await getMyOrders();
         const totalSpent = ordersRes.data.reduce(
           (sum, o) => sum + parseFloat(o.total_price || 0),
@@ -72,53 +87,43 @@ export default function Profile() {
     }
   };
 
+  const handleActivateFarmer = async (e) => {
+    e.preventDefault();
+    setFormError("");
+    setFormSuccess("");
+    try {
+      const response = await activateFarmer(farmerForm);
+      setFormSuccess("Farmer mode activated! You can now list produce.");
+      // Update user in AuthContext
+      login(response.data, token);
+      setTimeout(() => {
+        setShowFarmerSetup(false);
+        navigate("/dashboard/farmer");
+      }, 1500);
+    } catch (err) {
+      setFormError(
+        err.response?.data?.message || "Failed to activate farmer mode",
+      );
+    }
+  };
+
+  const handleSwitchMode = async (mode) => {
+    setSwitchingMode(true);
+    try {
+      const response = await switchMode({ mode });
+      login(response.data, token);
+      navigate(mode === "farmer" ? "/dashboard/farmer" : "/dashboard/buyer");
+    } catch (err) {
+      console.error("Failed to switch mode:", err);
+    } finally {
+      setSwitchingMode(false);
+    }
+  };
+
   const handleLogout = () => {
     logout();
     navigate("/login");
   };
-
-  const farmerStats = [
-    {
-      label: "Total Revenue",
-      value: `ZMW ${stats.revenue.toLocaleString()}`,
-      icon: TrendingUp,
-    },
-    { label: "Orders Fulfilled", value: stats.orders, icon: Package },
-    { label: "Active Listings", value: stats.listings, icon: ShoppingCart },
-  ];
-
-  const buyerStats = [
-    {
-      label: "Total Spent",
-      value: `ZMW ${stats.spent.toLocaleString()}`,
-      icon: TrendingUp,
-    },
-    { label: "Orders Placed", value: stats.orders, icon: Package },
-  ];
-
-  const displayStats = user?.role === "farmer" ? farmerStats : buyerStats;
-
-  const NAV_ITEMS = [
-    {
-      id: "home",
-      label: "Home",
-      emoji: "🏠",
-      path: user?.role === "farmer" ? "/dashboard/farmer" : "/dashboard/buyer",
-    },
-    {
-      id: "market",
-      label: "Marketplace",
-      emoji: "🛒",
-      path: "/dashboard/buyer",
-    },
-    {
-      id: "orders",
-      label: "Orders",
-      emoji: "📦",
-      path: user?.role === "farmer" ? "/dashboard/farmer" : "/dashboard/buyer",
-    },
-    { id: "profile", label: "Profile", emoji: "👤", path: "/profile" },
-  ];
 
   return (
     <div
@@ -130,29 +135,6 @@ export default function Profile() {
         {/* Status Bar */}
         <div className="flex-none px-8 pt-4 pb-1 flex items-center justify-between bg-[#F7F5F0] z-10">
           <span className="text-[13px] font-semibold text-zinc-800">9:41</span>
-          <div className="flex items-center gap-1.5">
-            <svg width="17" height="12" viewBox="0 0 17 12" fill="none">
-              <rect x="0" y="3" width="3" height="9" rx="1" fill="#1C2B1A" />
-              <rect x="4.5" y="2" width="3" height="10" rx="1" fill="#1C2B1A" />
-              <rect
-                x="9"
-                y="0.5"
-                width="3"
-                height="11.5"
-                rx="1"
-                fill="#1C2B1A"
-              />
-              <rect
-                x="13.5"
-                y="0"
-                width="3"
-                height="12"
-                rx="1"
-                fill="#1C2B1A"
-                opacity="0.3"
-              />
-            </svg>
-          </div>
         </div>
 
         {/* Cover Banner */}
@@ -165,9 +147,7 @@ export default function Profile() {
           <div className="absolute inset-0 opacity-10">
             <div className="absolute top-4 right-8 w-20 h-20 rounded-full bg-white" />
             <div className="absolute bottom-2 right-24 w-12 h-12 rounded-full bg-white" />
-            <div className="absolute top-8 left-16 w-8 h-8 rounded-full bg-white" />
           </div>
-          {/* Settings icon */}
           <button
             className="absolute top-4 right-4 w-8 h-8 rounded-full flex items-center justify-center"
             style={{ background: "rgba(255,255,255,0.2)" }}
@@ -200,55 +180,70 @@ export default function Profile() {
           <h1 className="text-[20px] font-bold text-[#1C2B1A]">{user?.name}</h1>
           <p className="text-[12px] text-[#7A7A6E] mt-0.5">@{user?.name}</p>
 
-          <div className="flex items-center gap-3 mt-2">
+          <div className="flex items-center gap-3 mt-2 flex-wrap">
+            {user?.is_farmer && (
+              <span
+                className="text-[10px] font-bold px-2 py-0.5 rounded-full"
+                style={{ background: "#D8F3DC", color: "#1B4332" }}
+              >
+                🌱 Farmer
+              </span>
+            )}
             <span
               className="text-[10px] font-bold px-2 py-0.5 rounded-full"
-              style={{
-                background: user?.role === "farmer" ? "#D8F3DC" : "#EFF6FF",
-                color: user?.role === "farmer" ? "#1B4332" : "#1D4ED8",
-              }}
+              style={{ background: "#EFF6FF", color: "#1D4ED8" }}
             >
-              {user?.role === "farmer" ? "🌱 Farmer" : "🛒 Buyer"}
+              🛒 Buyer
             </span>
-            <div className="flex items-center gap-1">
-              <MapPin size={10} className="text-[#A67C52]" />
-              <span className="text-[10px] text-[#7A7A6E]">Zambia</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Stats Bar */}
-        <div className="flex-none px-6 mb-4">
-          <div
-            className="grid gap-3"
-            style={{
-              gridTemplateColumns: `repeat(${displayStats.length}, 1fr)`,
-            }}
-          >
-            {displayStats.map((stat) => (
-              <div
-                key={stat.label}
-                className="rounded-2xl p-3 text-center"
-                style={{ background: "#fff", border: "1px solid #D8F3DC" }}
-              >
-                <stat.icon
-                  size={14}
-                  className="mx-auto mb-1"
-                  style={{ color: "#40916C" }}
-                />
-                <p className="text-[13px] font-bold text-[#1C2B1A]">
-                  {stat.value}
-                </p>
-                <p className="text-[9px] text-[#7A7A6E] mt-0.5">{stat.label}</p>
+            {user?.farm_province && (
+              <div className="flex items-center gap-1">
+                <MapPin size={10} className="text-[#A67C52]" />
+                <span className="text-[10px] text-[#7A7A6E]">
+                  {user.farm_province}
+                </span>
               </div>
-            ))}
+            )}
           </div>
+
+          {/* Mode Switch (only if farmer) */}
+          {user?.is_farmer && (
+            <div className="flex gap-2 mt-3">
+              <button
+                onClick={() => handleSwitchMode("buyer")}
+                disabled={switchingMode}
+                className="flex-1 py-2 rounded-xl text-[11px] font-semibold transition-all"
+                style={{
+                  background:
+                    user?.active_mode === "buyer" ? "#1B4332" : "#F0F0EA",
+                  color: user?.active_mode === "buyer" ? "#fff" : "#7A7A6E",
+                }}
+              >
+                🛒 Buyer mode
+              </button>
+              <button
+                onClick={() => handleSwitchMode("farmer")}
+                disabled={switchingMode}
+                className="flex-1 py-2 rounded-xl text-[11px] font-semibold transition-all"
+                style={{
+                  background:
+                    user?.active_mode === "farmer" ? "#1B4332" : "#F0F0EA",
+                  color: user?.active_mode === "farmer" ? "#fff" : "#7A7A6E",
+                }}
+              >
+                🌱 Farmer mode
+              </button>
+            </div>
+          )}
         </div>
 
-        {/* Tabs */}
-        <div className="flex-none px-6 mb-4">
+        {/* Scrollable Content */}
+        <div
+          className="flex-1 overflow-y-auto px-6"
+          style={{ scrollbarWidth: "none" }}
+        >
+          {/* Tabs */}
           <div
-            className="flex rounded-xl overflow-hidden"
+            className="flex rounded-xl overflow-hidden mb-4"
             style={{ background: "#E8E8E0" }}
           >
             {["info", "activity", "settings"].map((tab) => (
@@ -266,13 +261,7 @@ export default function Profile() {
               </button>
             ))}
           </div>
-        </div>
 
-        {/* Tab Content */}
-        <div
-          className="flex-1 overflow-y-auto px-6"
-          style={{ scrollbarWidth: "none" }}
-        >
           {/* Info Tab */}
           {activeTab === "info" && (
             <div className="space-y-3">
@@ -296,37 +285,145 @@ export default function Profile() {
                       {user?.email}
                     </p>
                   </div>
-                  <div className="flex items-center justify-between">
-                    <p className="text-[12px] text-[#7A7A6E]">Role</p>
-                    <p className="text-[12px] font-semibold text-[#1C2B1A] capitalize">
-                      {user?.role}
-                    </p>
-                  </div>
+                  {user?.phone && (
+                    <div className="flex items-center justify-between">
+                      <p className="text-[12px] text-[#7A7A6E]">Phone</p>
+                      <p className="text-[12px] font-semibold text-[#1C2B1A]">
+                        {user.phone}
+                      </p>
+                    </div>
+                  )}
+                  {user?.main_produce && (
+                    <div className="flex items-center justify-between">
+                      <p className="text-[12px] text-[#7A7A6E]">Main Produce</p>
+                      <p className="text-[12px] font-semibold text-[#1C2B1A]">
+                        {user.main_produce}
+                      </p>
+                    </div>
+                  )}
                 </div>
               </div>
 
-              {/* Add Role CTA */}
-              <div
-                className="rounded-2xl p-4"
-                style={{ background: "#1B4332" }}
-              >
-                <p className="text-[11px] font-semibold text-emerald-300 uppercase tracking-wide mb-1">
-                  {user?.role === "farmer"
-                    ? "Also want to buy?"
-                    : "Also want to sell?"}
-                </p>
-                <p className="text-[13px] font-bold text-white mb-3">
-                  {user?.role === "farmer"
-                    ? "Switch to Buyer mode to purchase produce from other farmers"
-                    : "Switch to Farmer mode to list your own produce for sale"}
-                </p>
-                <button
-                  className="px-4 py-2 rounded-xl text-[11px] font-bold"
-                  style={{ background: "#A67C52", color: "#fff" }}
+              {/* Activate Farmer CTA */}
+              {!user?.is_farmer && !showFarmerSetup && (
+                <div
+                  className="rounded-2xl p-4"
+                  style={{ background: "#1B4332" }}
                 >
-                  Coming soon
-                </button>
-              </div>
+                  <p className="text-[11px] font-semibold text-emerald-300 uppercase tracking-wide mb-1">
+                    Want to sell?
+                  </p>
+                  <p className="text-[13px] font-bold text-white mb-3">
+                    Activate Farmer mode to list your produce and start earning
+                  </p>
+                  <button
+                    onClick={() => setShowFarmerSetup(true)}
+                    className="px-4 py-2 rounded-xl text-[11px] font-bold"
+                    style={{ background: "#A67C52", color: "#fff" }}
+                  >
+                    Start selling →
+                  </button>
+                </div>
+              )}
+
+              {/* Farmer Setup Form */}
+              {showFarmerSetup && (
+                <form
+                  onSubmit={handleActivateFarmer}
+                  className="bg-white rounded-2xl p-4"
+                  style={{ border: "1px solid #D8F3DC" }}
+                >
+                  <p className="font-bold text-sm text-[#1C2B1A] mb-3">
+                    🌱 Set up your farmer profile
+                  </p>
+
+                  {formError && (
+                    <div
+                      className="mb-3 px-3 py-2 rounded-lg text-xs"
+                      style={{ background: "#FEE2E2", color: "#991B1B" }}
+                    >
+                      {formError}
+                    </div>
+                  )}
+                  {formSuccess && (
+                    <div
+                      className="mb-3 px-3 py-2 rounded-lg text-xs"
+                      style={{ background: "#D8F3DC", color: "#1B4332" }}
+                    >
+                      {formSuccess}
+                    </div>
+                  )}
+
+                  <div className="space-y-2">
+                    <input
+                      type="tel"
+                      placeholder="Phone number (e.g. 0977123456)"
+                      value={farmerForm.phone}
+                      onChange={(e) =>
+                        setFarmerForm({ ...farmerForm, phone: e.target.value })
+                      }
+                      required
+                      className="w-full px-3 py-2 rounded-xl text-sm outline-none border border-black/10 bg-[#F7F5F0]"
+                    />
+
+                    <select
+                      value={farmerForm.farm_province}
+                      onChange={(e) =>
+                        setFarmerForm({
+                          ...farmerForm,
+                          farm_province: e.target.value,
+                        })
+                      }
+                      required
+                      className="w-full px-3 py-2 rounded-xl text-sm outline-none border border-black/10 bg-[#F7F5F0]"
+                    >
+                      <option value="">Select your province</option>
+                      <option value="Lusaka">Lusaka</option>
+                      <option value="Copperbelt">Copperbelt</option>
+                      <option value="Eastern">Eastern</option>
+                      <option value="Northern">Northern</option>
+                      <option value="Southern">Southern</option>
+                      <option value="Western">Western</option>
+                      <option value="Central">Central</option>
+                      <option value="North-Western">North-Western</option>
+                      <option value="Luapula">Luapula</option>
+                      <option value="Muchinga">Muchinga</option>
+                    </select>
+
+                    <input
+                      type="text"
+                      placeholder="Main produce (e.g. Tomatoes, Maize)"
+                      value={farmerForm.main_produce}
+                      onChange={(e) =>
+                        setFarmerForm({
+                          ...farmerForm,
+                          main_produce: e.target.value,
+                        })
+                      }
+                      required
+                      className="w-full px-3 py-2 rounded-xl text-sm outline-none border border-black/10 bg-[#F7F5F0]"
+                    />
+
+                    <div className="flex gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setShowFarmerSetup(false)}
+                        className="flex-1 py-2 rounded-xl text-sm font-semibold border border-black/10"
+                        style={{ color: "#7A7A6E" }}
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        type="submit"
+                        className="flex-1 py-2 rounded-xl text-sm font-semibold text-white"
+                        style={{ background: "#2D6A4F" }}
+                      >
+                        Activate
+                      </button>
+                    </div>
+                  </div>
+                </form>
+              )}
             </div>
           )}
 
@@ -364,7 +461,7 @@ export default function Profile() {
                 ].map((item, i) => (
                   <div
                     key={item.label}
-                    className="flex items-center justify-between px-4 py-3 cursor-pointer active:bg-stone-50"
+                    className="flex items-center justify-between px-4 py-3 cursor-pointer"
                     style={{
                       borderBottom: i < 2 ? "1px solid #F0F0EA" : "none",
                     }}
@@ -385,7 +482,6 @@ export default function Profile() {
                 ))}
               </div>
 
-              {/* Logout */}
               <button
                 onClick={handleLogout}
                 className="w-full py-3 rounded-2xl text-sm font-semibold flex items-center justify-center gap-2"
@@ -401,7 +497,33 @@ export default function Profile() {
         {/* Bottom Nav */}
         <div className="flex-none bg-white border-t border-black/8 px-2 pb-4 pt-2">
           <div className="flex items-center">
-            {NAV_ITEMS.map((item) => {
+            {[
+              {
+                id: "home",
+                label: "Home",
+                icon: Home,
+                path:
+                  user?.active_mode === "farmer"
+                    ? "/dashboard/farmer"
+                    : "/dashboard/buyer",
+              },
+              {
+                id: "market",
+                label: "Marketplace",
+                icon: ShoppingBag,
+                path: "/dashboard/buyer",
+              },
+              {
+                id: "orders",
+                label: "Orders",
+                icon: Package,
+                path:
+                  user?.active_mode === "farmer"
+                    ? "/dashboard/farmer"
+                    : "/dashboard/buyer",
+              },
+              { id: "profile", label: "Profile", icon: User, path: "/profile" },
+            ].map((item) => {
               const active = item.id === "profile";
               return (
                 <button
@@ -412,7 +534,11 @@ export default function Profile() {
                   <div
                     className={`w-8 h-8 rounded-xl flex items-center justify-center transition-colors ${active ? "bg-[#EAF3EE]" : ""}`}
                   >
-                    <span className="text-lg leading-none">{item.emoji}</span>
+                    <item.icon
+                      size={20}
+                      className={`transition-colors ${active ? "text-[#2D6A4F]" : "text-[#7A7A6E]"}`}
+                      strokeWidth={active ? 2.5 : 2.1}
+                    />
                   </div>
                   <span
                     className={`text-[10px] font-semibold transition-colors ${active ? "text-[#2D6A4F]" : "text-[#7A7A6E]"}`}

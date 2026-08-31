@@ -105,11 +105,14 @@ const loginUser = async (req, res) => {
 // @route   GET /api/users/profile
 // @access  Private
 const getUserProfile = async (req, res) => {
+  const user_id = req.user.id;
+
   try {
-    // req.user.id is attached by your protect middleware from the JWT token
     const userResult = await pool.query(
-      "SELECT id, username, email, role FROM users WHERE id = $1",
-      [req.user.id],
+      `SELECT id, username, email, role, is_farmer, is_buyer, active_mode, 
+              phone, farm_province, main_produce, created_at 
+       FROM users WHERE id = $1`,
+      [user_id],
     );
 
     if (userResult.rows.length === 0) {
@@ -118,16 +121,22 @@ const getUserProfile = async (req, res) => {
 
     const user = userResult.rows[0];
 
-    // changed 'username' to 'name' here so the frontend's {user.name} works instantly!
     res.status(200).json({
       id: user.id,
       name: user.username,
       email: user.email,
       role: user.role,
+      is_farmer: user.is_farmer,
+      is_buyer: user.is_buyer,
+      active_mode: user.active_mode || "buyer",
+      phone: user.phone,
+      farm_province: user.farm_province,
+      main_produce: user.main_produce,
+      created_at: user.created_at,
     });
   } catch (error) {
-    console.error("Error fetching user profile:", error.message);
-    res.status(500).json({ message: "Server error fetching profile details" });
+    console.error("Get Profile Error:", error.message);
+    res.status(500).json({ message: "Server error fetching profile" });
   }
 };
 // @desc    Get all users (admin only)
@@ -168,6 +177,104 @@ const getPlatformStats = async (req, res) => {
     res.status(500).json({ message: "Server error fetching stats" });
   }
 };
+// @desc    Activate farmer mode for a user
+// @route   POST /api/users/activate-farmer
+// @access  Private
+const activateFarmer = async (req, res) => {
+  const { phone, farm_province, main_produce } = req.body;
+  const user_id = req.user.id;
+
+  try {
+    if (!phone || !farm_province || !main_produce) {
+      return res.status(400).json({
+        message: "Please provide phone, province and main produce",
+      });
+    }
+
+    const updatedUser = await pool.query(
+      `UPDATE users 
+       SET is_farmer = TRUE, 
+           role = 'farmer',
+           phone = $1, 
+           farm_province = $2, 
+           main_produce = $3,
+           active_mode = 'farmer'
+       WHERE id = $4 
+       RETURNING id, username, email, role, is_farmer, is_buyer, active_mode, phone, farm_province, main_produce`,
+      [phone, farm_province, main_produce, user_id],
+    );
+
+    const user = updatedUser.rows[0];
+
+    res.status(200).json({
+      id: user.id,
+      name: user.username,
+      email: user.email,
+      role: user.role,
+      is_farmer: user.is_farmer,
+      is_buyer: user.is_buyer,
+      active_mode: user.active_mode,
+      phone: user.phone,
+      farm_province: user.farm_province,
+      main_produce: user.main_produce,
+      message: "Farmer mode activated successfully!",
+    });
+  } catch (error) {
+    console.error("Activate Farmer Error:", error.message);
+    res.status(500).json({ message: "Server error activating farmer mode" });
+  }
+};
+
+// @desc    Switch active mode (buyer/farmer)
+// @route   PUT /api/users/switch-mode
+// @access  Private
+const switchMode = async (req, res) => {
+  const { mode } = req.body;
+  const user_id = req.user.id;
+
+  try {
+    if (!mode || !["buyer", "farmer"].includes(mode)) {
+      return res
+        .status(400)
+        .json({ message: "Invalid mode. Use 'buyer' or 'farmer'" });
+    }
+
+    // Check if user has farmer access when switching to farmer
+    if (mode === "farmer") {
+      const userCheck = await pool.query(
+        "SELECT is_farmer FROM users WHERE id = $1",
+        [user_id],
+      );
+      if (!userCheck.rows[0].is_farmer) {
+        return res.status(403).json({
+          message: "You need to activate farmer mode first",
+        });
+      }
+    }
+
+    const updatedUser = await pool.query(
+      `UPDATE users SET active_mode = $1 WHERE id = $2 
+       RETURNING id, username, email, role, is_farmer, is_buyer, active_mode`,
+      [mode, user_id],
+    );
+
+    const user = updatedUser.rows[0];
+
+    res.status(200).json({
+      id: user.id,
+      name: user.username,
+      email: user.email,
+      role: user.role,
+      is_farmer: user.is_farmer,
+      is_buyer: user.is_buyer,
+      active_mode: user.active_mode,
+      message: `Switched to ${mode} mode`,
+    });
+  } catch (error) {
+    console.error("Switch Mode Error:", error.message);
+    res.status(500).json({ message: "Server error switching mode" });
+  }
+};
 // 🔽 UPDATED: Included getUserProfile and getAllUsers in exports 🔽
 module.exports = {
   registerUser,
@@ -175,4 +282,6 @@ module.exports = {
   getUserProfile,
   getAllUsers,
   getPlatformStats,
+  activateFarmer,
+  switchMode,
 };

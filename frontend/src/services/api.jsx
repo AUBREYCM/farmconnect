@@ -40,3 +40,7 @@ export default API;
 export const getAllUsers = () => API.get("/users/all");
 export const getPlatformStats = () => API.get("/users/stats");
 export const getAllOrdersAdmin = () => API.get("/orders");
+// Role switching endpoints
+export const activateFarmer = (data) =>
+  API.post("/users/activate-farmer", data);
+export const switchMode = (data) => API.put("/users/switch-mode", data);

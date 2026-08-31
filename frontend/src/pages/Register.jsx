@@ -174,44 +174,6 @@ export default function Register() {
               />
             </div>
 
-            {/* Role */}
-            <div>
-              <label
-                className="block text-sm font-medium mb-1"
-                style={{ color: "#1B4332" }}
-              >
-                I am a
-              </label>
-              <div className="grid grid-cols-2 gap-3">
-                <button
-                  type="button"
-                  onClick={() => setFormData({ ...formData, role: "buyer" })}
-                  className="py-3 rounded-lg text-sm font-medium transition-all"
-                  style={{
-                    background:
-                      formData.role === "buyer" ? "#1B4332" : "#F8F4EE",
-                    color: formData.role === "buyer" ? "#fff" : "#1B4332",
-                    border: "1px solid #D8F3DC",
-                  }}
-                >
-                  🛒 Buyer
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setFormData({ ...formData, role: "farmer" })}
-                  className="py-3 rounded-lg text-sm font-medium transition-all"
-                  style={{
-                    background:
-                      formData.role === "farmer" ? "#1B4332" : "#F8F4EE",
-                    color: formData.role === "farmer" ? "#fff" : "#1B4332",
-                    border: "1px solid #D8F3DC",
-                  }}
-                >
-                  🌱 Farmer
-                </button>
-              </div>
-            </div>
-
             {/* Password */}
             <div>
               <label

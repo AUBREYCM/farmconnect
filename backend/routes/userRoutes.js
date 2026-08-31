@@ -6,6 +6,8 @@ const {
   getUserProfile,
   getAllUsers,
   getPlatformStats,
+  activateFarmer,
+  switchMode,
 } = require("../controllers/userController");
 const { protect, restrictTo } = require("../middleware/authMiddleware");
 
@@ -14,5 +16,7 @@ router.post("/login", loginUser);
 router.get("/profile", protect, getUserProfile);
 router.get("/all", protect, restrictTo("admin"), getAllUsers);
 router.get("/stats", protect, restrictTo("admin"), getPlatformStats);
+router.post("/activate-farmer", protect, activateFarmer);
+router.put("/switch-mode", protect, switchMode);
 
 module.exports = router;
