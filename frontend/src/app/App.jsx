@@ -52,17 +52,25 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
 
   return children;
 };
+
 function AppRoutes() {
   const { user, token } = useAuth();
 
   return (
     <Routes>
-      {/* Public routes */}
+      {/* Public routes (Guests can browse freely) */}
+      <Route path="/" element={<BuyerDashboard />} />
+      <Route path="/marketplace" element={<BuyerDashboard />} />
+      <Route path="/farmer/:id" element={<FarmerPublicProfile />} />
+
       <Route
         path="/login"
         element={
           token && user ? (
-            <Navigate to={`/dashboard/${user.role}`} replace />
+            <Navigate
+              to={user.role === "farmer" ? "/dashboard/farmer" : "/"}
+              replace
+            />
           ) : (
             <Login />
           )
@@ -72,14 +80,17 @@ function AppRoutes() {
         path="/register"
         element={
           token && user ? (
-            <Navigate to={`/dashboard/${user.role}`} replace />
+            <Navigate
+              to={user.role === "farmer" ? "/dashboard/farmer" : "/"}
+              replace
+            />
           ) : (
             <Register />
           )
         }
       />
 
-      {/* Protected routes */}
+      {/* Protected routes (Requires login) */}
       <Route
         path="/dashboard/farmer"
         element={
@@ -88,14 +99,7 @@ function AppRoutes() {
           </ProtectedRoute>
         }
       />
-      <Route
-        path="/dashboard/buyer"
-        element={
-          <ProtectedRoute allowedRoles={["buyer"]}>
-            <BuyerDashboard />
-          </ProtectedRoute>
-        }
-      />
+      <Route path="/dashboard/buyer" element={<Navigate to="/" replace />} />
       <Route
         path="/dashboard/admin"
         element={
@@ -112,17 +116,9 @@ function AppRoutes() {
           </ProtectedRoute>
         }
       />
-      <Route
-        path="/farmer/:id"
-        element={
-          <ProtectedRoute allowedRoles={["farmer", "buyer", "admin"]}>
-            <FarmerPublicProfile />
-          </ProtectedRoute>
-        }
-      />
-      {/* Default redirect */}
-      <Route path="/" element={<Navigate to="/login" replace />} />
-      <Route path="*" element={<Navigate to="/login" replace />} />
+
+      {/* Default fallback */}
+      <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
 }
