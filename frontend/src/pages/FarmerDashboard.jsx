@@ -70,7 +70,7 @@ export default function FarmerDashboard() {
       setProducts(productsRes.data.filter((p) => p.farmer_name === user?.name));
     } catch (err) {
       console.error("Failed to fetch data:", err);
-    } fontally {
+    } finally {
       setLoading(false);
     }
   };
