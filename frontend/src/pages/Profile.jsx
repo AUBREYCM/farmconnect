@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import {
@@ -8,7 +8,6 @@ import {
   activateFarmer,
   switchMode,
 } from "../services/api";
-import { useEffect } from "react";
 import {
   Home,
   ShoppingBag,
@@ -265,6 +264,7 @@ export default function Profile() {
           {/* Info Tab */}
           {activeTab === "info" && (
             <div className="space-y-3">
+              {/* Account Info Card */}
               <div
                 className="bg-white rounded-2xl p-4"
                 style={{ border: "1px solid #D8F3DC" }}
@@ -281,7 +281,7 @@ export default function Profile() {
                   </div>
                   <div className="flex items-center justify-between">
                     <p className="text-[12px] text-[#7A7A6E]">Email</p>
-                    <p className="text-[12px] font-semibold text-[#1C2B1A]">
+                    <p className="text-[12px] font-semibold text-[#1C2B1A] truncate max-w-[180px]">
                       {user?.email}
                     </p>
                   </div>
@@ -293,14 +293,122 @@ export default function Profile() {
                       </p>
                     </div>
                   )}
-                  {user?.main_produce && (
+                  {user?.created_at && (
                     <div className="flex items-center justify-between">
-                      <p className="text-[12px] text-[#7A7A6E]">Main Produce</p>
+                      <p className="text-[12px] text-[#7A7A6E]">Member since</p>
                       <p className="text-[12px] font-semibold text-[#1C2B1A]">
-                        {user.main_produce}
+                        {new Date(user.created_at).toLocaleDateString("en-GB", {
+                          month: "short",
+                          year: "numeric",
+                        })}
                       </p>
                     </div>
                   )}
+                  <div className="flex items-center justify-between">
+                    <p className="text-[12px] text-[#7A7A6E]">Account type</p>
+                    <div className="flex gap-1">
+                      <span
+                        className="text-[10px] font-bold px-2 py-0.5 rounded-full"
+                        style={{ background: "#EFF6FF", color: "#1D4ED8" }}
+                      >
+                        Buyer
+                      </span>
+                      {user?.is_farmer && (
+                        <span
+                          className="text-[10px] font-bold px-2 py-0.5 rounded-full"
+                          style={{ background: "#D8F3DC", color: "#1B4332" }}
+                        >
+                          Farmer
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Farmer Details Card — only if farmer */}
+              {user?.is_farmer && (
+                <div
+                  className="bg-white rounded-2xl p-4"
+                  style={{ border: "1px solid #D8F3DC" }}
+                >
+                  <p className="text-[11px] font-semibold text-[#7A7A6E] mb-3 uppercase tracking-wide">
+                    Farmer Details
+                  </p>
+                  <div className="space-y-3">
+                    {user?.farm_province && (
+                      <div className="flex items-center justify-between">
+                        <p className="text-[12px] text-[#7A7A6E]">Province</p>
+                        <p className="text-[12px] font-semibold text-[#1C2B1A]">
+                          {user.farm_province}
+                        </p>
+                      </div>
+                    )}
+                    {user?.main_produce && (
+                      <div className="flex items-center justify-between">
+                        <p className="text-[12px] text-[#7A7A6E]">
+                          Main Produce
+                        </p>
+                        <p className="text-[12px] font-semibold text-[#1C2B1A]">
+                          {user.main_produce}
+                        </p>
+                      </div>
+                    )}
+                    <div className="flex items-center justify-between">
+                      <p className="text-[12px] text-[#7A7A6E]">
+                        Total Listings
+                      </p>
+                      <p className="text-[12px] font-semibold text-[#1C2B1A]">
+                        {stats.listings}
+                      </p>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <p className="text-[12px] text-[#7A7A6E]">
+                        Total Revenue
+                      </p>
+                      <p
+                        className="text-[12px] font-semibold"
+                        style={{ color: "#2D6A4F" }}
+                      >
+                        ZMW {stats.revenue.toLocaleString()}
+                      </p>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <p className="text-[12px] text-[#7A7A6E]">
+                        Orders Fulfilled
+                      </p>
+                      <p className="text-[12px] font-semibold text-[#1C2B1A]">
+                        {stats.orders}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Buyer Stats Card */}
+              <div
+                className="bg-white rounded-2xl p-4"
+                style={{ border: "1px solid #D8F3DC" }}
+              >
+                <p className="text-[11px] font-semibold text-[#7A7A6E] mb-3 uppercase tracking-wide">
+                  Buyer Activity
+                </p>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <p className="text-[12px] text-[#7A7A6E]">Total Orders</p>
+                    <p className="text-[12px] font-semibold text-[#1C2B1A]">
+                      {stats.orders}
+                    </p>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <p className="text-[12px] text-[#7A7A6E]">Total Spent</p>
+                    <p
+                      className="text-[12px] font-semibold"
+                      style={{ color: "#2D6A4F" }}
+                    >
+                      ZMW {stats.spent.toLocaleString()}
+                    </p>
+                  </div>
                 </div>
               </div>
 
