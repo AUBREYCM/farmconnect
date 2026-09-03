@@ -44,7 +44,10 @@ export default function BuyerDashboard() {
   const [orderQty, setOrderQty] = useState(1);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
-
+  const totalSpent = orders.reduce(
+    (sum, order) => sum + parseFloat(order.total_price || 0),
+    0,
+  );
   useEffect(() => {
     const timer = setTimeout(() => {
       fetchData();
