@@ -1,12 +1,13 @@
+import React from "react";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { AuthProvider, useAuth } from "../context/AuthContext";
+
 import Messages from "../pages/Messages";
 import FarmerPublicProfile from "../pages/FarmerPublicProfile";
 import Profile from "../pages/Profile";
 import AdminDashboard from "../pages/AdminDashboard";
 import BuyerDashboard from "../pages/BuyerDashboard";
 import FarmerDashboard from "../pages/FarmerDashboard";
-import React from "react";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { AuthProvider, useAuth } from "../context/AuthContext";
 import Login from "../pages/Login";
 import Register from "../pages/Register";
 
@@ -117,20 +118,20 @@ function AppRoutes() {
           </ProtectedRoute>
         }
       />
+      <Route
+        path="/messages"
+        element={
+          <ProtectedRoute allowedRoles={["farmer", "buyer", "admin"]}>
+            <Messages />
+          </ProtectedRoute>
+        }
+      />
 
       {/* Default fallback */}
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
 }
-<Route
-  path="/messages"
-  element={
-    <ProtectedRoute allowedRoles={["farmer", "buyer", "admin"]}>
-      <Messages />
-    </ProtectedRoute>
-  }
-/>;
 
 export default function App() {
   return (
