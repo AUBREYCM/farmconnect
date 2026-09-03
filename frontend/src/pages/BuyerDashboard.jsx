@@ -46,9 +46,11 @@ export default function BuyerDashboard() {
   const [success, setSuccess] = useState("");
 
   useEffect(() => {
-    fetchData();
+    const timer = setTimeout(() => {
+      fetchData();
+    }, 500);
+    return () => clearTimeout(timer);
   }, []);
-
   // Auto-clear notification messages after 4 seconds
   useEffect(() => {
     if (success || error) {
@@ -242,11 +244,17 @@ export default function BuyerDashboard() {
               </button>
             </div>
           )}
-          {error && (
-            <div className="mx-6 mt-2 px-4 py-2.5 rounded-xl text-xs flex items-center justify-between bg-red-100 text-red-800">
-              <span>{error}</span>
-              <button onClick={() => setError("")}>
-                <X size={14} />
+          {error && !loading && (
+            <div
+              className="mx-6 mt-2 px-4 py-3 rounded-xl text-sm"
+              style={{ background: "#FEE2E2", color: "#991B1B" }}
+            >
+              {error}
+              <button
+                onClick={() => setError("")}
+                className="ml-2 text-xs font-bold"
+              >
+                ✕
               </button>
             </div>
           )}
