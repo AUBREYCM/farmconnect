@@ -21,9 +21,8 @@ const NAV_ITEMS = [
   { id: "market", label: "Marketplace", icon: ShoppingBag },
   { id: "messages", label: "Messages", icon: MessageCircle },
   { id: "orders", label: "Orders", icon: Package },
-  { id: "profile", label: "Profile", icon: User },
+  { id: "me", label: "Me", icon: User },
 ];
-
 export default function BuyerDashboard() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();

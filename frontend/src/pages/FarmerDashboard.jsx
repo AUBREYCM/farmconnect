@@ -26,10 +26,11 @@ const ORDER_STAGES = [
 ];
 
 const NAV_ITEMS = [
-  { id: "home", label: "Home", emoji: "🏠", path: "/dashboard/farmer" },
-  { id: "market", label: "Marketplace", emoji: "🛒", path: "/dashboard/buyer" },
-  { id: "messages", label: "Messages", emoji: "💬", path: "/dashboard/farmer" },
-  { id: "profile", label: "Profile", emoji: "👤", path: "/profile" },
+  { id: "home", label: "Home", icon: Home },
+  { id: "market", label: "Marketplace", icon: ShoppingBag },
+  { id: "messages", label: "Messages", icon: MessageCircle },
+  { id: "orders", label: "Orders", icon: Package },
+  { id: "me", label: "Me", icon: User },
 ];
 
 export default function FarmerDashboard() {
@@ -642,7 +643,9 @@ export default function FarmerDashboard() {
                   key={item.id}
                   onClick={() => {
                     setActiveNav(item.id);
-                    navigate(item.path);
+                    if (item.id === "me") navigate("/profile");
+                    else if (item.id === "messages") navigate("/messages");
+                    else if (item.id === "market") navigate("/dashboard/buyer");
                   }}
                   className="flex-1 flex flex-col items-center gap-1 py-1 relative"
                 >

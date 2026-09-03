@@ -1,3 +1,4 @@
+import Messages from "../pages/Messages";
 import FarmerPublicProfile from "../pages/FarmerPublicProfile";
 import Profile from "../pages/Profile";
 import AdminDashboard from "../pages/AdminDashboard";
@@ -122,6 +123,14 @@ function AppRoutes() {
     </Routes>
   );
 }
+<Route
+  path="/messages"
+  element={
+    <ProtectedRoute allowedRoles={["farmer", "buyer", "admin"]}>
+      <Messages />
+    </ProtectedRoute>
+  }
+/>;
 
 export default function App() {
   return (

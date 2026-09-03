@@ -622,6 +622,12 @@ export default function Profile() {
                 path: "/dashboard/buyer",
               },
               {
+                id: "messages",
+                label: "Messages",
+                icon: MessageCircle,
+                path: "/messages",
+              },
+              {
                 id: "orders",
                 label: "Orders",
                 icon: Package,
@@ -630,7 +636,7 @@ export default function Profile() {
                     ? "/dashboard/farmer"
                     : "/dashboard/buyer",
               },
-              { id: "profile", label: "Profile", icon: User, path: "/profile" },
+              { id: "me", label: "Me", icon: User, path: "/profile" },
             ].map((item) => {
               const active = item.id === "profile";
               return (
