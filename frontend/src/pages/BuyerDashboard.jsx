@@ -64,35 +64,20 @@ export default function BuyerDashboard() {
 
   const fetchData = async () => {
     setLoading(true);
+    setError("");
     try {
       const [productsRes, ordersRes] = await Promise.all([
-        getAllProducts(),
-        getMyOrders(),
+        getAllProducts().catch(() => ({ data: [] })),
+        getMyOrders().catch(() => ({ data: [] })),
       ]);
       setProducts(productsRes.data || []);
       setOrders(ordersRes.data || []);
     } catch (err) {
       console.error("Failed to fetch data:", err);
-      setError("Failed to load marketplace data. Please try refreshing.");
     } finally {
       setLoading(false);
     }
   };
-
-  const filteredProducts = products.filter((p) => {
-    const matchesSearch = p.name
-      .toLowerCase()
-      .includes(searchQuery.toLowerCase());
-    const matchesProvince = selectedProvince
-      ? p.province === selectedProvince
-      : true;
-    return matchesSearch && matchesProvince;
-  });
-
-  const totalSpent = orders.reduce(
-    (sum, order) => sum + (parseFloat(order.total_price) || 0),
-    0,
-  );
 
   const formatCurrency = (amount) =>
     Number(amount || 0).toLocaleString(undefined, {
