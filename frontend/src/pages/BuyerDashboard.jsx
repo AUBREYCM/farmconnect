@@ -6,12 +6,11 @@ import {
   User,
   Bell,
   ChevronRight,
-  TrendingUp,
+  ShoppingCart,
   Package,
-  CheckCircle,
-  Truck,
   Star,
-  Plus,
+  Search,
+  X,
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { getAllProducts, placeOrder, getMyOrders } from "../services/api";
