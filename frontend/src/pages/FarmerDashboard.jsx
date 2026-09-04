@@ -8,6 +8,10 @@ import {
 } from "../services/api";
 import { useState, useEffect } from "react";
 import {
+  Home,
+  ShoppingBag,
+  MessageCircle,
+  User,
   Bell,
   ChevronRight,
   TrendingUp,
