@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { getAllProducts, placeOrder, getMyOrders } from "../services/api";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 
 const NAV_ITEMS = [
   { id: "home", label: "Home", icon: Home },
@@ -26,7 +26,10 @@ const NAV_ITEMS = [
 export default function BuyerDashboard() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
-  const [activeNav, setActiveNav] = useState("home");
+  const location = useLocation();
+  const [activeNav, setActiveNav] = useState(
+    location.pathname.includes("farmer") ? "home" : "home",
+  );
   const [products, setProducts] = useState([]);
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -498,8 +501,11 @@ export default function BuyerDashboard() {
                   key={item.id}
                   onClick={() => {
                     setActiveNav(item.id);
-                    if (item.id === "profile") navigate("/profile");
+                    if (item.id === "me") navigate("/profile");
                     else if (item.id === "messages") navigate("/messages");
+                    else if (item.id === "market") navigate("/dashboard/buyer");
+                    else if (item.id === "home") navigate("/dashboard/buyer");
+                    else if (item.id === "orders") navigate("/dashboard/buyer");
                   }}
                   className="flex-1 flex flex-col items-center gap-1 py-1"
                 >

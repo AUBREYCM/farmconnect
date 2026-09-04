@@ -1,4 +1,4 @@
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import {
   getFarmerOrders,
   getAllProducts,
@@ -40,7 +40,10 @@ const NAV_ITEMS = [
 export default function FarmerDashboard() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
-  const [activeNav, setActiveNav] = useState("home");
+  const location = useLocation();
+  const [activeNav, setActiveNav] = useState(
+    location.pathname.includes("farmer") ? "home" : "home",
+  );
   const [orders, setOrders] = useState([]);
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -650,6 +653,9 @@ export default function FarmerDashboard() {
                     if (item.id === "me") navigate("/profile");
                     else if (item.id === "messages") navigate("/messages");
                     else if (item.id === "market") navigate("/dashboard/buyer");
+                    else if (item.id === "home") navigate("/dashboard/farmer");
+                    else if (item.id === "orders")
+                      navigate("/dashboard/farmer");
                   }}
                   className="flex-1 flex flex-col items-center gap-1 py-1 relative"
                 >
