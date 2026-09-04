@@ -11,6 +11,7 @@ import {
 import {
   Home,
   ShoppingBag,
+  MessageCircle,
   Package,
   User,
   Settings,
